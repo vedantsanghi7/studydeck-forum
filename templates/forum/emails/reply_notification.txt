@@ -1,0 +1,13 @@
+New Reply to Your Thread
+
+Hello {{ thread.author.get_full_name|default:thread.author.username }},
+
+{{ reply_author.get_full_name|default:reply_author.username }} has replied to your thread: {{ thread.title }}
+
+Reply:
+{{ reply.content }}
+
+View the thread at: http://{{ site_url }}{% url 'forum:thread_detail' thread.pk %}
+
+---
+This is an automated notification from StudyDeck Forum.

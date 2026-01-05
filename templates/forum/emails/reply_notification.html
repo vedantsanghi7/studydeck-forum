@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>New Reply Notification</title>
+</head>
+<body>
+    <h2>New Reply to Your Thread</h2>
+    <p>Hello {{ thread.author.get_full_name|default:thread.author.username }},</p>
+    
+    <p><strong>{{ reply_author.get_full_name|default:reply_author.username }}</strong> has replied to your thread:</p>
+    
+    <h3><a href="http://{{ site_url }}{% url 'forum:thread_detail' thread.pk %}">{{ thread.title }}</a></h3>
+    
+    <div style="background-color: #f5f5f5; padding: 15px; margin: 20px 0; border-left: 4px solid #007bff;">
+        {{ reply.content_html|safe }}
+    </div>
+    
+    <p><a href="http://{{ site_url }}{% url 'forum:thread_detail' thread.pk %}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">View Thread</a></p>
+    
+    <hr>
+    <p style="color: #666; font-size: 12px;">This is an automated notification from StudyDeck Forum.</p>
+</body>
+</html>

@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ thread.title }} - StudyDeck Forum{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+            <h4 class="mb-0">{{ thread.title }}</h4>
+            <small class="text-muted">
+                <a href="{% url 'forum:category_detail' thread.category.slug %}" class="text-decoration-none">
+                    {{ thread.category.name }}
+                </a>
+            </small>
+        </div>
+        <div>
+            {% if thread.is_locked %}
+            <span class="badge bg-warning">Locked</span>
+            {% endif %}
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="d-flex mb-3">
+            <div class="flex-grow-1">
+                <div class="card-text">{{ thread.content_html|safe }}</div>
+                {% if thread.course %}
+                <p class="mb-0">
+                    <strong>Course:</strong> 
+                    <span class="badge bg-info">{{ thread.course.code }} - {{ thread.course.title }}</span>
+                </p>
+                {% endif %}
+                {% if thread.resource %}
+                <p class="mb-0">
+                    <strong>Resource:</strong> 
+                    <a href="{{ thread.resource.link }}" target="_blank">{{ thread.resource.title }}</a>
+                </p>
+                {% endif %}
+                {% if thread.thread_tags.all %}
+                <div class="mt-2">
+                    {% for thread_tag in thread.thread_tags.all %}
+                    <span class="badge bg-secondary tag-badge">#{{ thread_tag.tag.name }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <small class="text-muted">
+                    Posted by <a href="{% url 'forum:user_profile' thread.author.id %}">{{ thread.author.get_full_name|default:thread.author.username }}</a>
+                    • {{ thread.created_at|timesince }} ago
+                </small>
+            </div>
+            <div>
+                {% if user.is_authenticated %}
+                <button id="upvote-thread-{{ thread.pk }}" 
+                        class="btn {% if user_upvoted %}btn-primary{% else %}btn-outline-primary{% endif %} btn-sm"
+                        onclick="toggleUpvote('thread', {{ thread.pk }})">
+                    <i class="bi bi-heart"></i> <span id="upvote-count-thread-{{ thread.pk }}">{{ thread.get_upvote_count }}</span>
+                </button>
+                {% else %}
+                <span class="badge bg-secondary">
+                    <i class="bi bi-heart"></i> {{ thread.get_upvote_count }}
+                </span>
+                {% endif %}
+                
+                {% if user.is_authenticated %}
+                <a href="{% url 'forum:report_create' %}?thread_id={{ thread.pk }}" class="btn btn-outline-danger btn-sm">
+                    <i class="bi bi-flag"></i> Report
+                </a>
+                {% endif %}
+                
+                {% if user == thread.author or user.profile.is_moderator %}
+                <a href="{% url 'forum:thread_edit' thread.pk %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-pencil"></i> Edit
+                </a>
+                {% endif %}
+                
+                {% if user.profile.is_moderator %}
+                <a href="{% url 'forum:thread_lock' thread.pk %}" class="btn btn-outline-warning btn-sm">
+                    <i class="bi bi-{% if thread.is_locked %}unlock{% else %}lock{% endif %}"></i>
+                    {% if thread.is_locked %}Unlock{% else %}Lock{% endif %}
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h5>Replies ({{ thread.get_reply_count }})</h5>
+    <div class="btn-group btn-group-sm" role="group">
+        <a href="?sort=latest" class="btn btn-outline-secondary {% if sort_by == 'latest' %}active{% endif %}">Latest</a>
+        <a href="?sort=popular" class="btn btn-outline-secondary {% if sort_by == 'popular' %}active{% endif %}">Popular</a>
+    </div>
+</div>
+
+{% if user.is_authenticated and not thread.is_locked %}
+<div class="card mb-4">
+    <div class="card-body">
+        <h6>Post a Reply</h6>
+        <form method="post" action="{% url 'forum:reply_create' thread.pk %}">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">Post Reply</button>
+        </form>
+    </div>
+</div>
+{% elif thread.is_locked %}
+<div class="alert alert-warning">
+    <i class="bi bi-lock-fill"></i> This thread is locked. No new replies can be posted.
+</div>
+{% endif %}
+
+<div class="list-group">
+    {% for reply in page_obj %}
+    <div class="list-group-item">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+            <div class="flex-grow-1">
+                <div class="mb-1">{{ reply.content_html|safe }}</div>
+                <small class="text-muted">
+                    by <a href="{% url 'forum:user_profile' reply.author.id %}">{{ reply.author.get_full_name|default:reply.author.username }}</a>
+                    • {{ reply.created_at|timesince }} ago
+                </small>
+            </div>
+            <div class="ms-3">
+                {% if user.is_authenticated %}
+                <button id="upvote-reply-{{ reply.pk }}" 
+                        class="btn btn-outline-primary btn-sm"
+                        onclick="toggleUpvote('reply', {{ reply.pk }})">
+                    <i class="bi bi-heart"></i> <span id="upvote-count-reply-{{ reply.pk }}">{{ reply.get_upvote_count }}</span>
+                </button>
+                {% else %}
+                <span class="badge bg-secondary">
+                    <i class="bi bi-heart"></i> {{ reply.get_upvote_count }}
+                </span>
+                {% endif %}
+            </div>
+        </div>
+        <div>
+            {% if user.is_authenticated %}
+            <a href="{% url 'forum:report_create' %}?reply_id={{ reply.pk }}" class="btn btn-outline-danger btn-sm">
+                <i class="bi bi-flag"></i> Report
+            </a>
+            {% if user == reply.author or user.profile.is_moderator %}
+            <a href="{% url 'forum:reply_edit' reply.pk %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-pencil"></i> Edit
+            </a>
+            <a href="{% url 'forum:reply_delete' reply.pk %}" class="btn btn-outline-danger btn-sm">
+                <i class="bi bi-trash"></i> Delete
+            </a>
+            {% endif %}
+            {% endif %}
+        </div>
+    </div>
+    {% empty %}
+    <div class="list-group-item">
+        <p class="text-muted mb-0">No replies yet. Be the first to reply!</p>
+    </div>
+    {% endfor %}
+</div>
+
+{% if page_obj.has_other_pages %}
+<nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+        </li>
+        {% endif %}
+        
+        {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+        <li class="page-item active">
+            <span class="page-link">{{ num }}</span>
+        </li>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+        </li>
+        {% endif %}
+        {% endfor %}
+        
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

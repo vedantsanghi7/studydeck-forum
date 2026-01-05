@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}StudyDeck Forum - Home{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-9">
+        <h2 class="mb-4">Forum Categories</h2>
+        <div class="row">
+            {% for category in categories %}
+            <div class="col-md-6 mb-4">
+                <div class="card thread-card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <a href="{% url 'forum:category_detail' category.slug %}" class="text-decoration-none">
+                                {{ category.name }}
+                            </a>
+                        </h5>
+                        <p class="card-text text-muted">{{ category.description|truncatewords:15 }}</p>
+                        <small class="text-muted">
+                            <i class="bi bi-chat-dots"></i> {{ category.thread_count }} threads
+                        </small>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <p class="text-muted">No categories available yet.</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <h3 class="mt-5 mb-3">Recent Threads</h3>
+        <div class="list-group">
+            {% for thread in recent_threads %}
+            <div class="list-group-item">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">
+                        <a href="{% url 'forum:thread_detail' thread.pk %}" class="text-decoration-none">
+                            {{ thread.title }}
+                        </a>
+                    </h5>
+                    <small>{{ thread.created_at|timesince }} ago</small>
+                </div>
+                <p class="mb-1">{{ thread.content|truncatewords:20 }}</p>
+                <small>
+                    <span class="badge bg-secondary">{{ thread.category.name }}</span>
+                    by <a href="{% url 'forum:user_profile' thread.author.id %}">{{ thread.author.get_full_name|default:thread.author.username }}</a>
+                </small>
+            </div>
+            {% empty %}
+            <p class="text-muted">No threads yet. Be the first to start a discussion!</p>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-header">
+                <h5>Quick Links</h5>
+            </div>
+            <div class="list-group list-group-flush">
+                {% if user.is_authenticated %}
+                <a href="{% url 'forum:thread_create' %}" class="list-group-item list-group-item-action">
+                    <i class="bi bi-plus-circle"></i> Create Thread
+                </a>
+                <a href="{% url 'forum:user_profile' user.id %}" class="list-group-item list-group-item-action">
+                    <i class="bi bi-person"></i> My Profile
+                </a>
+                {% else %}
+                <a href="{% url 'account_login' %}" class="list-group-item list-group-item-action">
+                    <i class="bi bi-box-arrow-in-right"></i> Login to participate
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

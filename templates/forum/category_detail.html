@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ category.name }} - StudyDeck Forum{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>{{ category.name }}</h2>
+    <div class="d-flex gap-2">
+        <div class="btn-group" role="group">
+            <a href="?sort=latest" class="btn btn-sm btn-outline-secondary {% if sort_by == 'latest' %}active{% endif %}">Latest</a>
+            <a href="?sort=popular" class="btn btn-sm btn-outline-secondary {% if sort_by == 'popular' %}active{% endif %}">Popular</a>
+            <a href="?sort=upvotes" class="btn btn-sm btn-outline-secondary {% if sort_by == 'upvotes' %}active{% endif %}">Most Upvoted</a>
+        </div>
+        {% if user.is_authenticated %}
+        <a href="{% url 'forum:thread_create' %}?category={{ category.id }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> New Thread
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+{% if category.description %}
+<p class="text-muted mb-4">{{ category.description }}</p>
+{% endif %}
+
+<div class="list-group">
+    {% for thread in page_obj %}
+    <div class="list-group-item">
+        <div class="d-flex w-100 justify-content-between">
+            <div class="flex-grow-1">
+                <h5 class="mb-1">
+                    <a href="{% url 'forum:thread_detail' thread.pk %}" class="text-decoration-none">
+                        {{ thread.title }}
+                        {% if thread.is_locked %}
+                        <i class="bi bi-lock-fill text-warning" title="Locked"></i>
+                        {% endif %}
+                    </a>
+                </h5>
+                <p class="mb-1">{{ thread.content|truncatewords:30 }}</p>
+                <small class="text-muted">
+                    by <a href="{% url 'forum:user_profile' thread.author.id %}">{{ thread.author.get_full_name|default:thread.author.username }}</a>
+                    • {{ thread.created_at|timesince }} ago
+                    {% if thread.course %}
+                    • <span class="badge bg-info">{{ thread.course.code }}</span>
+                    {% endif %}
+                    {% for thread_tag in thread.thread_tags.all %}
+                    <span class="badge bg-secondary tag-badge">#{{ thread_tag.tag.name }}</span>
+                    {% endfor %}
+                </small>
+            </div>
+            <div class="ms-3 text-end">
+                <div class="mb-2">
+                    <i class="bi bi-chat-dots"></i> {{ thread.reply_count }} replies
+                </div>
+                <div>
+                    <i class="bi bi-heart"></i> {{ thread.upvote_count }} upvotes
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="list-group-item">
+        <p class="text-muted mb-0">No threads in this category yet. Be the first to start a discussion!</p>
+    </div>
+    {% endfor %}
+</div>
+
+{% if page_obj.has_other_pages %}
+<nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+        </li>
+        {% endif %}
+        
+        {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+        <li class="page-item active">
+            <span class="page-link">{{ num }}</span>
+        </li>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+        </li>
+        {% endif %}
+        {% endfor %}
+        
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

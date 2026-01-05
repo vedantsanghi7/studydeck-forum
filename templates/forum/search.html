@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}Search - StudyDeck Forum{% endblock %}
+
+{% block content %}
+<h2>Search Results</h2>
+{% if query %}
+<p>Results for "<strong>{{ query }}</strong>"</p>
+{% endif %}
+
+<div class="list-group">
+    {% for thread in page_obj %}
+    <div class="list-group-item">
+        <div class="d-flex w-100 justify-content-between">
+            <div class="flex-grow-1">
+                <h5 class="mb-1">
+                    <a href="{% url 'forum:thread_detail' thread.pk %}" class="text-decoration-none">
+                        {{ thread.title }}
+                    </a>
+                </h5>
+                <p class="mb-1">{{ thread.content|truncatewords:30 }}</p>
+                <small class="text-muted">
+                    <a href="{% url 'forum:category_detail' thread.category.slug %}">{{ thread.category.name }}</a>
+                    • by <a href="{% url 'forum:user_profile' thread.author.id %}">{{ thread.author.get_full_name|default:thread.author.username }}</a>
+                    • {{ thread.created_at|timesince }} ago
+                </small>
+            </div>
+            <div class="ms-3 text-end">
+                <div class="mb-2">
+                    <i class="bi bi-chat-dots"></i> {{ thread.reply_count }} replies
+                </div>
+                <div>
+                    <i class="bi bi-heart"></i> {{ thread.upvote_count }} upvotes
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="list-group-item">
+        <p class="text-muted mb-0">No results found.</p>
+    </div>
+    {% endfor %}
+</div>
+
+{% if page_obj.has_other_pages %}
+<nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?q={{ query }}&page={{ page_obj.previous_page_number }}">Previous</a>
+        </li>
+        {% endif %}
+        
+        {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+        <li class="page-item active">
+            <span class="page-link">{{ num }}</span>
+        </li>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+        <li class="page-item">
+            <a class="page-link" href="?q={{ query }}&page={{ num }}">{{ num }}</a>
+        </li>
+        {% endif %}
+        {% endfor %}
+        
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?q={{ query }}&page={{ page_obj.next_page_number }}">Next</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

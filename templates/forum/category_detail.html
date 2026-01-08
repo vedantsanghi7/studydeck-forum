@@ -36,7 +36,7 @@
                         {% endif %}
                     </a>
                 </h5>
-                <p class="mb-1">{{ thread.content|truncatewords:30 }}</p>
+                <p class="mb-1">{{ thread.content_html|truncatewords:30|striptags }}</p>
                 <small class="text-muted">
                     by <a href="{% url 'forum:user_profile' thread.author.id %}">{{ thread.author.get_full_name|default:thread.author.username }}</a>
                     • {{ thread.created_at|timesince }} ago

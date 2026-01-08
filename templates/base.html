@@ -67,6 +67,9 @@
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
                                 <i class="bi bi-person-circle"></i> {{ user.get_full_name|default:user.username }}
+                                {% if user.profile.is_moderator %}
+                                <span class="badge bg-warning ms-1">Mod</span>
+                                {% endif %}
                             </a>
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item" href="{% url 'forum:user_profile' user.id %}">Profile</a></li>

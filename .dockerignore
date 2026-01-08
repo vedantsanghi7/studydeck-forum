@@ -4,21 +4,9 @@ __pycache__/
 *$py.class
 *.so
 .Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
 *.egg-info/
-.installed.cfg
-*.egg
+dist/
+build/
 
 # Virtual Environment
 venv/
@@ -45,15 +33,19 @@ db.sqlite3-journal
 .env
 .env.local
 
-# SSH Keys
-*.pem
-*key.pem
-studydeck-key.pem
-
 # OS
 .DS_Store
 Thumbs.db
 
-# Documentation (exclude all markdown except README.md)
+# Git
+.git/
+.gitignore
+
+# Documentation
 *.md
 !README.md
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore

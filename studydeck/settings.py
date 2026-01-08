@@ -29,6 +29,22 @@ DEBUG = config('DEBUG', default=True, cast=bool)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=lambda v: [s.strip() for s in v.split(',')])
 
+# CSRF Trusted Origins (required when behind a proxy/nginx)
+# Check environment variable directly first (docker-compose sets it from .env)
+csrf_origins_str = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
+if not csrf_origins_str:
+    csrf_origins_str = config('CSRF_TRUSTED_ORIGINS', default='')
+    
+if csrf_origins_str and str(csrf_origins_str).strip():
+    CSRF_TRUSTED_ORIGINS = [s.strip() for s in str(csrf_origins_str).split(',') if s.strip()]
+else:
+    # Auto-generate from ALLOWED_HOSTS - build list explicitly
+    CSRF_TRUSTED_ORIGINS = []
+    for host in ALLOWED_HOSTS:
+        if host and str(host).strip():
+            clean_host = str(host).strip()
+            CSRF_TRUSTED_ORIGINS.extend([f'http://{clean_host}', f'https://{clean_host}'])
+
 
 # Application definition
 

@@ -70,17 +70,25 @@
                 </a>
                 {% endif %}
                 
-                {% if user == thread.author or user.profile.is_moderator %}
-                <a href="{% url 'forum:thread_edit' thread.pk %}" class="btn btn-outline-secondary btn-sm">
-                    <i class="bi bi-pencil"></i> Edit
-                </a>
-                {% endif %}
-                
-                {% if user.profile.is_moderator %}
-                <a href="{% url 'forum:thread_lock' thread.pk %}" class="btn btn-outline-warning btn-sm">
-                    <i class="bi bi-{% if thread.is_locked %}unlock{% else %}lock{% endif %}"></i>
-                    {% if thread.is_locked %}Unlock{% else %}Lock{% endif %}
-                </a>
+                {% if user.is_authenticated %}
+                    {% if user == thread.author or user.profile.is_moderator %}
+                    <a href="{% url 'forum:thread_edit' thread.pk %}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-pencil"></i> Edit
+                    </a>
+                    {% endif %}
+                    
+                    {% if user == thread.author or user.profile.is_moderator %}
+                    <a href="{% url 'forum:thread_delete' thread.pk %}" class="btn btn-outline-danger btn-sm">
+                        <i class="bi bi-trash"></i> Delete
+                    </a>
+                    {% endif %}
+                    
+                    {% if user.profile.is_moderator %}
+                    <a href="{% url 'forum:thread_lock' thread.pk %}" class="btn btn-outline-warning btn-sm">
+                        <i class="bi bi-{% if thread.is_locked %}unlock{% else %}lock{% endif %}"></i>
+                        {% if thread.is_locked %}Unlock{% else %}Lock{% endif %}
+                    </a>
+                    {% endif %}
                 {% endif %}
             </div>
         </div>
@@ -142,13 +150,18 @@
             <a href="{% url 'forum:report_create' %}?reply_id={{ reply.pk }}" class="btn btn-outline-danger btn-sm">
                 <i class="bi bi-flag"></i> Report
             </a>
-            {% if user == reply.author or user.profile.is_moderator %}
-            <a href="{% url 'forum:reply_edit' reply.pk %}" class="btn btn-outline-secondary btn-sm">
-                <i class="bi bi-pencil"></i> Edit
-            </a>
-            <a href="{% url 'forum:reply_delete' reply.pk %}" class="btn btn-outline-danger btn-sm">
-                <i class="bi bi-trash"></i> Delete
-            </a>
+            {% if user.is_authenticated %}
+                {% if user == reply.author or user.profile.is_moderator %}
+                <a href="{% url 'forum:reply_edit' reply.pk %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-pencil"></i> Edit
+                </a>
+                {% endif %}
+                
+                {% if user == reply.author or user.profile.is_moderator %}
+                <a href="{% url 'forum:reply_delete' reply.pk %}" class="btn btn-outline-danger btn-sm">
+                    <i class="bi bi-trash"></i> Delete
+                </a>
+                {% endif %}
             {% endif %}
             {% endif %}
         </div>

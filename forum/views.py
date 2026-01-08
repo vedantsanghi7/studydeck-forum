@@ -36,9 +36,16 @@ def category_detail(request, slug):
     threads = Thread.objects.filter(category=category).select_related('author', 'category').annotate(
         reply_count=Count('replies', filter=Q(replies__is_deleted=False)),
         upvote_count=Count('upvotes')
-    ).order_by('-created_at')
+    )
     
-    # Pagination
+    sort_by = request.GET.get('sort', 'latest')
+    if sort_by == 'popular':
+        threads = threads.order_by('-upvote_count', '-reply_count', '-created_at')
+    elif sort_by == 'upvotes':
+        threads = threads.order_by('-upvote_count', '-created_at')
+    else:
+        threads = threads.order_by('-created_at')
+    
     paginator = Paginator(threads, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -46,6 +53,7 @@ def category_detail(request, slug):
     context = {
         'category': category,
         'page_obj': page_obj,
+        'sort_by': sort_by,
     }
     return render(request, 'forum/category_detail.html', context)
 

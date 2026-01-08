@@ -56,7 +56,7 @@ class Resource(models.Model):
 class Category(models.Model):
     """Forum categories for organizing discussions"""
     name = models.CharField(max_length=100, unique=True)
-    slug = models.SlugField(max_length=100, unique=True)
+    slug = models.SlugField(max_length=100, unique=True, blank=True)
     description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -79,7 +79,7 @@ class Category(models.Model):
 class Tag(models.Model):
     """Tags for categorizing threads"""
     name = models.CharField(max_length=50, unique=True)
-    slug = models.SlugField(max_length=50, unique=True)
+    slug = models.SlugField(max_length=50, unique=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

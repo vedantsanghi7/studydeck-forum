@@ -50,6 +50,9 @@ db.sqlite3-journal
 *key.pem
 studydeck-key.pem
 
+# Shell scripts
+*.sh
+
 # OS
 .DS_Store
 Thumbs.db
